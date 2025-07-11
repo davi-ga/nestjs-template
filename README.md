@@ -23,41 +23,86 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository with Docker support.
+
+## Prerequisites
+
+- Docker
+- Docker Compose
 
 ## Project setup
 
+1. Clone the repository and navigate to the project directory
+2. Create a `.env` file based on your environment needs
+3. Build and start the application:
+
 ```bash
-$ pnpm install
+# Build and start all services (PostgreSQL, Redis, NestJS API)
+$ docker-compose up -d --build
 ```
 
 ## Compile and run the project
 
 ```bash
-# development
-$ pnpm run start
+# Start all services in development mode
+$ docker-compose up -d
 
-# watch mode
-$ pnpm run start:dev
+# View logs
+$ docker-compose logs -f api
 
-# production mode
-$ pnpm run start:prod
+# Stop all services
+$ docker-compose down
+
+# Rebuild and restart
+$ docker-compose up -d --build
 ```
 
 ## Run tests
 
 ```bash
-# unit tests
+# Run tests inside the container
+$ docker-compose exec api pnpm run test
+
+# Run e2e tests
+$ docker-compose exec api pnpm run test:e2e
+
+# Run test coverage
+$ docker-compose exec api pnpm run test:cov
+```
+
+## Development without Docker
+
+If you prefer to run without Docker:
+
+```bash
+# Install dependencies
+$ pnpm install
+
+# Start in development mode
+$ pnpm run start:dev
+
+# Run tests
 $ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
 ```
 
 ## Deployment
+
+This project is containerized with Docker. When you're ready to deploy your NestJS application to production:
+
+```bash
+# Build production image
+$ docker build -t nest-app .
+
+# Run production container
+$ docker run -p 3000:3000 nest-app
+```
+
+For a complete production setup with database and Redis, use:
+
+```bash
+# Production deployment with docker-compose
+$ docker-compose -f docker-compose.yml up -d
+```
 
 When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
 
@@ -96,3 +141,30 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Docker Services
+
+This template includes the following services:
+
+- **API**: NestJS application running on port defined in `.env`
+- **PostgreSQL**: Database service with data persistence
+- **Redis**: Caching service
+
+### Useful Docker Commands
+
+```bash
+# View running containers
+$ docker-compose ps
+
+# View logs for specific service
+$ docker-compose logs -f api
+$ docker-compose logs -f db
+$ docker-compose logs -f redis
+
+# Execute commands inside containers
+$ docker-compose exec api sh
+$ docker-compose exec db psql -U postgres
+
+# Remove all containers and volumes
+$ docker-compose down -v
+```
