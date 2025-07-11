@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+    restart: unless-stopped
+    environment:
+      TZ: America/Sao_Paulo
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    networks:
+      - nest
+    healthcheck:
+      test: 
+        [
+          "CMD-SHELL", 
+          "pg_isready -U ${DB_USER} -d ${DB_NAME}"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  api:
+    build: .
+    container_name: napi
+    ports:
+      - ${API_PORT}:${API_PORT}
+    volumes:
+      - ./logs:/app/logs
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - DATABASE_HOST=${DB_HOST}
+      - DATABASE_PORT=${DB_PORT}
+      - DATABASE_NAME=${DB_NAME}
+      - DATABASE_USER=${DB_USER}
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+   
+    networks:
+      - nest
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - nestjs_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    networks:
+      - nest
+
+
+volumes:
+  postgres_data:
+  nestjs_redis:
+
+networks:
+  nest:
+    driver: bridge
