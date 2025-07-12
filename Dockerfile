@@ -1,5 +1,4 @@
-# Use a specific Node.js version and Alpine for smaller image size
-FROM node:18-alpine AS builder
+FROM node:18-alpine
 
 # Install pnpm globally
 RUN npm install -g pnpm
@@ -10,8 +9,14 @@ WORKDIR /app
 # Copy package files
 COPY package*.json pnpm-lock.yaml ./
 
-# Install dependencies (including dev dependencies for build)
+# Install all dependencies
 RUN pnpm install --frozen-lockfile
+
+# Copy Prisma schema
+COPY prisma ./prisma
+
+# Generate Prisma client
+RUN pnpm prisma generate
 
 # Copy source code
 COPY . .
@@ -19,31 +24,8 @@ COPY . .
 # Build the application
 RUN pnpm run build
 
-# Production stage
-FROM node:18-alpine AS production
-
-# Install pnpm globally
-RUN npm install -g pnpm
-
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nestjs -u 1001
-
-# Set working directory
-WORKDIR /app
-
-# Copy package files
-COPY package*.json pnpm-lock.yaml ./
-
-# Install only production dependencies
-RUN pnpm install --frozen-lockfile --prod && pnpm store prune
-
-# Copy built application from builder stage
-COPY --from=builder /app/dist ./dist
-
-# Change ownership to non-root user
-RUN chown -R nestjs:nodejs /app
-USER nestjs
+# Remove dev dependencies to reduce image size
+RUN pnpm prune --prod
 
 # Expose port
 EXPOSE 3000
