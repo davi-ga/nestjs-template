@@ -7,8 +7,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User{
-  id Int @id
-  name String
-  
+model User {
+  id    Int     @default(autoincrement()) @id
+  email String  @unique
+  name  String
+  password String
+  isActive Boolean @default(true) @map("is_active")
+  lastlogin DateTime? @map("last_login")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 }
