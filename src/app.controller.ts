@@ -6,7 +6,5 @@ export class AppController {
   constructor(private prisma: PrismaService) {}
 
   @Get()
-  async getHello(){
-
-  }
+  async getHello() {}
 }

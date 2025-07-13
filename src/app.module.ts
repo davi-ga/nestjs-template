@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { ConfigModule } from '@nestjs/config';
-import { PrismaService } from './database/prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { DatabaseModule } from './database/database.module';
@@ -14,7 +13,7 @@ import { DatabaseModule } from './database/database.module';
     }),
     AuthModule,
     UserModule,
-    DatabaseModule
+    DatabaseModule,
   ],
   controllers: [AppController],
 })
